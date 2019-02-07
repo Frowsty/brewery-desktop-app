@@ -1,4 +1,5 @@
 import pygame
+import os
 from random import choice
 from random import randint
 from time import sleep
@@ -13,6 +14,7 @@ BLUEISH = (27, 64, 96)
 GREY = (103, 109, 114)
 position = (0, 0)
 page = "Hem"
+did_accept = ''
 
 # set screen size (x,y)
 screen_width = 1100
@@ -164,6 +166,7 @@ def hover_animation():
 def draw_objects(screen, picture):
     global aos_height
 
+    # produkter page
     pygame.draw.polygon(screen, BLUE, ([150 - animation_size[0], aos_height + 320 + animation_size[0]], 
                                        [350 + animation_size[0], aos_height + 320 + animation_size[0]],
                                        [350 + animation_size[0], aos_height + 80 - animation_size[0]], 
@@ -201,11 +204,29 @@ def draw_objects(screen, picture):
     screen.blit(picture, (450, aos_height + 410))
     screen.blit(picture, (750, aos_height + 410))
 
-    pygame.draw.polygon(screen, BLUE, ([150, aos_height + 830], [950, aos_height + 830], [950, aos_height + 1330], [150, aos_height + 1330]))
-    
-    pygame.draw.polygon(screen, BLUE, ([150, aos_height + 1760], [350, aos_height + 1760], [350, aos_height + 1540], [150, aos_height + 1540]))
-    pygame.draw.polygon(screen, BLUE, ([450, aos_height + 1760], [650, aos_height + 1760], [650, aos_height + 1540], [450, aos_height + 1540]))
-    pygame.draw.polygon(screen, BLUE, ([750, aos_height + 1760], [950, aos_height + 1760], [950, aos_height + 1540], [750, aos_height + 1540]))
+    # om oss page
+    pygame.draw.polygon(screen, BLUE, ([150, aos_height + 830], 
+                                       [950, aos_height + 830], 
+                                       [950, aos_height + 1330], 
+                                       [150, aos_height + 1330]
+                                       ))
+
+    # kontakta oss page
+    pygame.draw.polygon(screen, BLUE, ([150, aos_height + 1760], 
+                                       [350, aos_height + 1760], 
+                                       [350, aos_height + 1540], 
+                                       [150, aos_height + 1540]
+                                       ))
+    pygame.draw.polygon(screen, BLUE, ([450, aos_height + 1760], 
+                                       [650, aos_height + 1760], 
+                                       [650, aos_height + 1540], 
+                                       [450, aos_height + 1540]
+                                       ))
+    pygame.draw.polygon(screen, BLUE, ([750, aos_height + 1760], 
+                                       [950, aos_height + 1760], 
+                                       [950, aos_height + 1540], 
+                                       [750, aos_height + 1540]
+                                       ))
 
 
 # toggle fullscreen (ON/OFF)
@@ -260,9 +281,38 @@ def aos():
             draw_hem = False
             draw_produkter = False
             draw_om_oss = False
-        
+
+def age_restriction(screen, font, large_font):
+    global did_accept
+    #f = open("meta-data.txt", 'w')
+    pygame.draw.polygon(screen, BLUEISH, ([50, 50], 
+                                          [1050, 50],
+                                          [1050, 670], 
+                                          [50, 670]
+                                          ))
+    age_restrict_txt1 = font.render("För att få tillgång till appen krävs det att du är 18+ enligt svensk lag.", 0, WHITE)
+    age_restrict_txt2 = font.render("Är du 18 år eller över?", 0, WHITE)
+    age_restrict_txt_yes = large_font.render("1 = JA!", 0, WHITE)
+    age_restrict_txt_no = large_font.render("| 2 = NEJ!", 0, WHITE)
+    screen.blit(age_restrict_txt1, (120, 100))
+    screen.blit(age_restrict_txt2, (400, 280))
+    screen.blit(age_restrict_txt_yes, (100, 350))
+    screen.blit(age_restrict_txt_no, (500, 350))
+
+    if pygame.key.get_pressed()[pygame.K_1]:
+        f = open("meta-data.txt", 'w')
+        f.write("I accept")
+        did_accept = "I accept"
+        f.close()
+    elif pygame.key.get_pressed()[pygame.K_2]:
+        f = open("meta-data.txt", 'w')
+        f.write("I reject")
+        did_accept = "I reject"
+        f.close()
+
 # define a main function
 def main():
+    global did_accept
     # initialize pygame modules
     pygame.init()
     pygame.font.init()
@@ -295,9 +345,14 @@ def main():
     fullscreen = False
     running = True
     
-    #some_text = my_font.render(f"Hovering: {page}", False, GREEN)
-
     clock = pygame.time.Clock()
+
+    if os.path.exists("meta-data.txt"):
+        f = open("meta-data.txt", "r+")
+        did_accept = f.readline()
+    else:
+        f = open("meta-data.txt", 'w+')
+        f.close()
 
     # our game loop
     while running:
@@ -310,27 +365,32 @@ def main():
                 quit()
             if pygame.key.get_pressed()[pygame.K_F12]:
                 fullscreen = toggle_fullscreen(fullscreen)
-
+        
         # set background of the application
-        # screen.fill(BLUEISH)
         screen.blit(back_picture, (-290, aos_height - 720))
 
-        mouse_pos_x, mouse_pos_y = pygame.mouse.get_pos()
-
-        input_system(mouse_pos_x, mouse_pos_y)
-
-        if draw_hem == True:
-            screen.blit(home_picture, (190, aos_height - 690))
-
-        # some_text = my_font.render(f"Page: {page}", False, GREEN)
-        # screen.blit(some_text, (10, 10))
+        if did_accept == 'I accept':
     
-        draw_objects(screen, bottle_picture)
-        draw_navbar(screen, my_font)
+            mouse_pos_x, mouse_pos_y = pygame.mouse.get_pos()
 
-        if draw_produkter == True and draw_om_oss == False and draw_kontakt == False and draw_hem == False:
-            hover_animation()
-        aos()
+            input_system(mouse_pos_x, mouse_pos_y)
+
+            if draw_hem == True:
+                screen.blit(home_picture, (190, aos_height - 690))
+        
+            draw_objects(screen, bottle_picture)
+            draw_navbar(screen, my_font)
+
+            if draw_produkter == True:
+                if draw_om_oss == False:
+                    if draw_kontakt == False:
+                        if draw_hem == False:
+                            hover_animation()
+            aos()
+        elif did_accept == 'I reject':
+            quit()
+        else:
+            age_restriction(screen, my_font, my_large_font)
 
         # limit FPS (Frames per seconds)
         clock.tick(30)
