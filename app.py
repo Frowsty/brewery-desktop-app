@@ -1,5 +1,6 @@
 import pygame
 import os
+import FroPy as fp
 from random import choice
 from random import randint
 from time import sleep
@@ -9,7 +10,9 @@ YELLOW = (255, 255, 0)
 WHITE = (255, 255, 255)
 BLUE = (70, 70, 200)
 GREEN = (0, 255, 0)
-RED = (200, 30, 30)
+DARK_GREEN = (13, 196, 13)
+DARK_RED = (196, 13, 13)
+RED = (255, 0, 0)
 BLUEISH = (27, 64, 96)
 GREY = (103, 109, 114)
 position = (0, 0)
@@ -40,7 +43,7 @@ draw_produkter = False
 draw_om_oss = False
 draw_kontakt = False
 
-def input_system(mouse_x, mouse_y):
+def input_system(screen, mouse_x, mouse_y):
     global page, product_1, product_2, product_3, product_4, product_5, product_6
     # check if mouse1 is pressed
     if pygame.mouse.get_pressed()[0] == True:
@@ -57,6 +60,7 @@ def input_system(mouse_x, mouse_y):
         if mouse_x >= 900 and mouse_x <= 1080:
             if mouse_y < 50:
                 page = "Kontakta Oss"
+
     # check if mouse is hovering products
     if mouse_x >= 150 and mouse_x <= 350:
         if mouse_y >= aos_height + 80 and mouse_y <= aos_height + 320:
@@ -162,6 +166,7 @@ def hover_animation():
         animation_size[5] -= 2
         if animation_size[5] <= 0:
             animation_size[5] = 0
+
 
 def draw_objects(screen, picture):
     global aos_height
@@ -282,7 +287,7 @@ def aos():
             draw_produkter = False
             draw_om_oss = False
 
-def age_restriction(screen, font, large_font):
+def age_restriction(screen, font, large_font, mouse_x, mouse_y):
     global did_accept
     #f = open("meta-data.txt", 'w')
     pygame.draw.polygon(screen, BLUEISH, ([50, 50], 
@@ -292,23 +297,33 @@ def age_restriction(screen, font, large_font):
                                           ))
     age_restrict_txt1 = font.render("För att få tillgång till appen krävs det att du är 18+ enligt svensk lag.", 0, WHITE)
     age_restrict_txt2 = font.render("Är du 18 år eller över?", 0, WHITE)
-    age_restrict_txt_yes = large_font.render("1 = JA!", 0, WHITE)
-    age_restrict_txt_no = large_font.render("| 2 = NEJ!", 0, WHITE)
+    # age_restrict_txt_yes = large_font.render("1 = JA!", 0, WHITE)
+    # age_restrict_txt_no = large_font.render("| 2 = NEJ!", 0, WHITE)
     screen.blit(age_restrict_txt1, (120, 100))
     screen.blit(age_restrict_txt2, (400, 280))
-    screen.blit(age_restrict_txt_yes, (100, 350))
-    screen.blit(age_restrict_txt_no, (500, 350))
+    # screen.blit(age_restrict_txt_yes, (100, 350))
+    # screen.blit(age_restrict_txt_no, (500, 350))
 
-    if pygame.key.get_pressed()[pygame.K_1]:
-        f = open("meta-data.txt", 'w')
-        f.write("I accept")
-        did_accept = "I accept"
-        f.close()
-    elif pygame.key.get_pressed()[pygame.K_2]:
-        f = open("meta-data.txt", 'w')
-        f.write("I reject")
-        did_accept = "I reject"
-        f.close()
+    yes_btn = fp.Button(GREEN, 290, 350, 200, 100, 'JA!')
+    no_btn = fp.Button(RED, 580, 350, 200, 100, 'NEJ!')
+    yes_btn.draw(screen, False, 2)
+    no_btn.draw(screen, False, 2)
+    if yes_btn.is_hover((mouse_x, mouse_y)) == True:
+        yes_btn = fp.Button(DARK_GREEN, 290, 350, 200, 100, 'JA!')
+        yes_btn.draw(screen, False, 2)
+        if pygame.mouse.get_pressed()[0] == True:
+            f = open("meta-data.txt", 'w')
+            f.write("I accept")
+            did_accept = "I accept"
+            f.close()
+    elif no_btn.is_hover((mouse_x, mouse_y)) == True:
+        no_btn = fp.Button(DARK_RED, 580, 350, 200, 100, 'NEJ!')
+        no_btn.draw(screen, False, 2)
+        if pygame.mouse.get_pressed()[0] == True:
+            f = open("meta-data.txt", 'w')
+            f.write("I reject")
+            did_accept = "I reject"
+            f.close()
 
 # define a main function
 def main():
@@ -373,7 +388,7 @@ def main():
     
             mouse_pos_x, mouse_pos_y = pygame.mouse.get_pos()
 
-            input_system(mouse_pos_x, mouse_pos_y)
+            input_system(screen, mouse_pos_x, mouse_pos_y)
 
             if draw_hem == True:
                 screen.blit(home_picture, (190, aos_height - 690))
@@ -390,7 +405,8 @@ def main():
         elif did_accept == 'I reject':
             quit()
         else:
-            age_restriction(screen, my_font, my_large_font)
+            mouse_pos_x, mouse_pos_y = pygame.mouse.get_pos()
+            age_restriction(screen, my_font, my_large_font, mouse_pos_x, mouse_pos_y)
 
         # limit FPS (Frames per seconds)
         clock.tick(30)
