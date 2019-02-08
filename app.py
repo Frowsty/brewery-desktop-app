@@ -306,11 +306,11 @@ def age_restriction(screen, font, large_font, mouse_x, mouse_y):
 
     yes_btn = fp.Button(GREEN, 290, 350, 200, 100, 'JA!')
     no_btn = fp.Button(RED, 580, 350, 200, 100, 'NEJ!')
-    yes_btn.draw(screen, False, 2)
-    no_btn.draw(screen, False, 2)
+    yes_btn.draw(screen)
+    no_btn.draw(screen)
     if yes_btn.is_hover((mouse_x, mouse_y)) == True:
         yes_btn = fp.Button(DARK_GREEN, 290, 350, 200, 100, 'JA!')
-        yes_btn.draw(screen, False, 2)
+        yes_btn.draw(screen)
         if pygame.mouse.get_pressed()[0] == True:
             f = open("meta-data.txt", 'w')
             f.write("I accept")
@@ -318,7 +318,7 @@ def age_restriction(screen, font, large_font, mouse_x, mouse_y):
             f.close()
     elif no_btn.is_hover((mouse_x, mouse_y)) == True:
         no_btn = fp.Button(DARK_RED, 580, 350, 200, 100, 'NEJ!')
-        no_btn.draw(screen, False, 2)
+        no_btn.draw(screen)
         if pygame.mouse.get_pressed()[0] == True:
             f = open("meta-data.txt", 'w')
             f.write("I reject")
