@@ -1,6 +1,7 @@
 import os
 import pygame
 import FroPy as fp
+import datetime as dt
 from time import sleep
 
 # preset color variables
@@ -13,6 +14,7 @@ DARK_GREEN = (13, 196, 13)
 DARK_RED = (196, 13, 13)
 RED = (255, 0, 0)
 BLUEISH = (27, 64, 96)
+DARK_BLUEISH = (27, 64, 76)
 GREY = (103, 109, 114)
 position = (0, 0)
 
@@ -258,7 +260,7 @@ def draw_objects(screen, picture, picture_2, mouse_x, mouse_y):
     # if they are we want to switch sub_page
     # depending on which sub_page it is currently on
     # and which button is being pressed
-    if next_page_btn.is_hover((mouse_x, mouse_y)) and sub_page < 4:
+    if next_page_btn.hovered(mouse_x, mouse_y) and sub_page < 4:
         if pygame.mouse.get_pressed()[0] == True:
             if sub_page == 1:
                 sub_page = 2
@@ -269,7 +271,8 @@ def draw_objects(screen, picture, picture_2, mouse_x, mouse_y):
             elif sub_page == 3:
                 sub_page = 4
                 sleep(0.12)
-    if back_page_btn.is_hover((mouse_x, mouse_y)) and sub_page > 1:
+    if back_page_btn.hovered(mouse_x, mouse_y) and sub_page > 1:
+        back_page_btn.color = DARK_BLUEISH
         if pygame.mouse.get_pressed()[0] == True:
             if sub_page == 2:
                 sub_page = 1
@@ -287,7 +290,7 @@ def draw_objects(screen, picture, picture_2, mouse_x, mouse_y):
     #                                    [950, aos_height + 1330], 
     #                                    [150, aos_height + 1330]
     #                                    ))
-    screen.blit(picture_2, (150, aos_height + 830))
+    screen.blit(picture_2, (50, aos_height + 830))
 
     # kontakta oss page
     pygame.draw.polygon(screen, BLUE, ([150, aos_height + 1760], 
@@ -406,9 +409,9 @@ def aos():
             draw_produkter = False
             draw_om_oss = False
 
-# function for the age restriction page to allow / now allow
+# function for the age restriction page to allow / not allow
 # users below the age of 18, saves a cookie like file that
-# reads what option the chose and then instead of having to accept
+# reads what option they chose and then instead of having to accept
 # everytime they open the app it reads the "cookie" to proceed
 def age_restriction(screen, font, large_font, mouse_x, mouse_y):
     global did_accept
@@ -431,20 +434,22 @@ def age_restriction(screen, font, large_font, mouse_x, mouse_y):
     no_btn = fp.Button(RED, 580, 350, 200, 100, 'NEJ!')
     yes_btn.draw(screen)
     no_btn.draw(screen)
-    if yes_btn.is_hover((mouse_x, mouse_y)) == True:
+    if yes_btn.hovered(mouse_x, mouse_y) == True:
         yes_btn.color = DARK_GREEN
         yes_btn.draw(screen)
         if pygame.mouse.get_pressed()[0] == True:
             meta_file = open("meta-data.txt", 'w')
             meta_file.write("I accept")
+            meta_file.write(f".{dt.datetime.now().date()}")
             did_accept = "I accept"
             meta_file.close()
-    elif no_btn.is_hover((mouse_x, mouse_y)) == True:
+    elif no_btn.hovered(mouse_x, mouse_y) == True:
         no_btn.color = DARK_RED
         no_btn.draw(screen)
         if pygame.mouse.get_pressed()[0] == True:
             meta_file = open("meta-data.txt", 'w')
-            meta_file.write("I reject")
+            meta_file.writelines("I reject")
+            meta_file.writelines(f".{dt.datetime.now().date()}")
             did_accept = "I reject"
             meta_file.close()
 
@@ -490,7 +495,14 @@ def main():
 
     if os.path.exists("meta-data.txt"):
         f = open("meta-data.txt", "r+")
-        did_accept = f.readline()
+        file_content = f.readline()
+        file_content_split = file_content.split('.')
+        print(file_content_split[0])
+        print(file_content_split[1])
+        if file_content_split[1] == str(dt.datetime.now().date()):
+            did_accept = file_content_split[0]
+        else:
+            did_accept = ''
     else:
         f = open("meta-data.txt", 'w+')
         f.close()
@@ -516,25 +528,26 @@ def main():
         # check if the cookie contains "I accept", "I reject"
         # if not run the age_restriction function
         if did_accept == 'I accept':
-            input_system(screen, mouse_pos_x, mouse_pos_y)
+                
+                input_system(screen, mouse_pos_x, mouse_pos_y)
 
-            if draw_hem == True:
-                screen.blit(home_picture, (190, aos_height - 690))
-        
-            draw_objects(screen, bottle_picture, om_oss_picture, mouse_pos_x, mouse_pos_y)
-            draw_navbar(screen, my_font)
-
-            # only run the hover animation on products
-            # if no other page is being rendered (increased performance)
-            if draw_produkter == True:
-                if draw_om_oss == False:
-                    if draw_kontakt == False:
-                        if draw_hem == False:
-                            hover_animation()
+                if draw_hem == True:
+                    screen.blit(home_picture, (190, aos_height - 690))
             
-            # run the animation functions (AOS)
-            aos()
-            aos_side_slide()
+                draw_objects(screen, bottle_picture, om_oss_picture, mouse_pos_x, mouse_pos_y)
+                draw_navbar(screen, my_font)
+
+                # only run the hover animation on products
+                # if no other page is being rendered (increased performance)
+                if draw_produkter == True:
+                    if draw_om_oss == False:
+                        if draw_kontakt == False:
+                            if draw_hem == False:
+                                hover_animation()
+                
+                # run the animation functions (AOS)
+                aos()
+                aos_side_slide()
         elif did_accept == 'I reject':
             quit()
         else:
