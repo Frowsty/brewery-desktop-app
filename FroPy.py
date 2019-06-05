@@ -201,3 +201,64 @@ class GroupBox:
                 if pygame.mouse.get_pressed()[0] == True and pygame.key.get_pressed()[pygame.K_RSHIFT] == True or pygame.mouse.get_pressed()[0] == True and pygame.key.get_pressed()[pygame.K_LSHIFT] == True:
                     self.x = mouse_x - (self.width / 2)
                     self.y = mouse_y - (self.height * 0.1)
+
+class InputBox:
+
+    def __init__(self, x, y, width, height, title="", placeholder="", color=(25,25,25), text_color=(255,255,255)):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.color = color
+        self.text_color = text_color
+        self.title = title
+        self.placeholder = placeholder
+        self.capture_text = False
+        self.text = []
+        self.text_width = 0
+    
+    def draw(self, screen, mouse_x, mouse_y, edge, font="Arial"):
+
+        if mouse_x < self.x + self.width and mouse_x > self.x:
+            if mouse_y < self.y + self.height and mouse_y > self.y:
+                if pygame.mouse.get_pressed()[0] == True:
+                    sleep(0.10)
+                    self.capture_text = not self.capture_text
+            else:
+                if pygame.mouse.get_pressed()[0] == True:
+                    self.capture_text = False
+        else:
+            if pygame.mouse.get_pressed()[0] == True:
+                    self.capture_text = False
+        
+        if self.capture_text == True:
+            for event in pygame.event.get():
+                if event.type == pygame.KEYDOWN and self.text_width < self.width:
+                    self.text = list(self.text)
+                    if event.key == pygame.K_BACKSPACE and len(self.text) != 0:
+                        self.text.pop()
+                    elif event.key == pygame.K_ESCAPE:
+                        self.capture_text = False
+                    elif event.key != pygame.K_RETURN and event.key != pygame.K_BACKSPACE:
+                        self.text.append(event.unicode)
+
+        pygame.draw.rect(screen, self.color, (self.x, self.y, self.width, self.height), edge)
+        
+        if len(list(self.text)) > 0:
+            scaled_text = scale_text((self.width, self.height), ''.join(self.text), self.text_color)
+            self.text_width = scaled_text.get_width()
+            screen.blit(scaled_text, (self.x + (self.width / 2 - scaled_text.get_width() / 2), self.y + (self.height / 2 - scaled_text.get_height() / 2)))
+        else:
+            if self.capture_text == False:
+                scaled_text = scale_text((self.width, self.height), self.placeholder, (75,75,75))
+                self.text_width = scaled_text.get_width()
+                screen.blit(scaled_text, (self.x + (self.width / 2 - scaled_text.get_width() / 2), self.y + (self.height / 2 - scaled_text.get_height() / 2)))
+        
+        scaled_title = scale_text((self.width, self.height), self.title, self.text_color)
+        screen.blit(scaled_title, (self.x - (scaled_title.get_width() + 10), self.y + (self.height / 2 - scaled_title.get_height() / 2)))
+
+    def get_text(self):
+        if len(self.text) > 0:
+            return ''.join(self.text)
+        else:
+            return "Failed to fetch text!"
